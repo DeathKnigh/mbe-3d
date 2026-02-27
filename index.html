@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBE 分子束外延 - 3D 交互学习平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            overflow: hidden;
+            background: linear-gradient(135deg, #0c0c1e 0%, #1a1a3e 50%, #0d1b2a 100%);
+        }
+        #canvas { width: 100vw; height: 100vh; display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            pointer-events: none;
+        }
+        #ui * { pointer-events: auto; }
+        h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #info {
+            background: rgba(0,20,40,0.85);
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 450px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,217,255,0.3);
+            box-shadow: 0 8px 32px rgba(0,217,255,0.1);
+        }
+        #info h3 { 
+            color: #00d9ff; 
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        #info p { line-height: 1.8; margin-bottom: 12px; color: #e0e0e0; }
+        #info ul { margin-left: 20px; color: #e0e0e0; }
+        #info li { margin-bottom: 8px; }
+        .category { color: #00ff88; font-weight: bold; }
+        .level { color: #ffcc00; }
+        .highlight { color: #ff6b9d; font-weight: bold; }
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 90%;
+        }
+        button {
+            padding: 14px 28px;
+            font-size: 15px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            background: linear-gradient(45deg, #00d9ff, #0099ff);
+            color: white;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0,217,255,0.4);
+            font-weight: 600;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,217,255,0.6);
+        }
+        button:active {
+            transform: translateY(-1px);
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 28px;
+            z-index: 1000;
+            text-align: center;
+        }
+        #loading .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0,217,255,0.3);
+            border-top-color: #00d9ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        #module-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        #module-selector select {
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 25px;
+            border: 2px solid #00d9ff;
+            background: rgba(0,20,40,0.9);
+            color: white;
+            cursor: pointer;
+            outline: none;
+        }
+        #module-selector select option {
+            background: #0a0a1a;
+            color: white;
+        }
+        #progress {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,20,40,0.85);
+            padding: 15px 25px;
+            border-radius: 15px;
+            color: white;
+            z-index: 100;
+            border: 1px solid rgba(0,217,255,0.3);
+        }
+        #progress-bar {
+            width: 200px;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            width: 0%;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <div>正在加载 MBE 知识库...</div>
+    </div>
+    
+    <div id="ui">
+        <h1>🔬 MBE 分子束外延 3D 交互平台</h1>
+        <div id="info">
+            <h3>📖 欢迎学习 MBE 技术</h3>
+            <p><span class="highlight">分子束外延 (Molecular Beam Epitaxy)</span> 是一种在单晶衬底上生长高质量单晶薄膜的技术。</p>
+            <p><span class="category">🎯 操作说明：</span></p>
+            <ul>
+                <li>🖱️ <span class="level">点击模块</span> - 查看详细内容</li>
+                <li>🔄 <span class="level">拖动旋转</span> - 查看 3D 结构</li>
+                <li>🔍 <span class="level">滚轮缩放</span> - 放大/缩小</li>
+            </ul>
+            <p style="margin-top: 15px; color: #00d9ff; font-size: 14px;">💡 共 6 大模块，32 个核心知识点</p>
+        </div>
+    </div>
+    
+    <div id="module-selector">
+        <select onchange="selectModule(this.value)">
+            <option value="all">🌐 显示全部模块</option>
+            <option value="principle">1️⃣ MBE 原理</option>
+            <option value="equipment">2️⃣ 设备结构</option>
+            <option value="process">3️⃣ 工艺流程</option>
+            <option value="materials">4️⃣ 材料体系</option>
+            <option value="application">5️⃣ 应用领域</option>
+            <option value="advantage">6️⃣ 优势局限</option>
+        </select>
+    </div>
+    
+    <div id="controls">
+        <button onclick="showModule('principle')">📚 MBE 原理</button>
+        <button onclick="showModule('equipment')">🔧 设备结构</button>
+        <button onclick="showModule('process')">⚙️ 工艺流程</button>
+        <button onclick="showModule('materials')">💎 材料体系</button>
+        <button onclick="showModule('application')">📱 应用领域</button>
+        <button onclick="showModule('advantage')">⚖️ 优势局限</button>
+        <button onclick="resetView()">🔄 重置视角</button>
+    </div>
+    
+    <div id="progress">
+        <div>学习进度</div>
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+        <div id="progress-text" style="margin-top: 5px; font-size: 14px; color: #00d9ff;">0 / 32 知识点</div>
+    </div>
+    
+    <canvas id="canvas"></canvas>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
